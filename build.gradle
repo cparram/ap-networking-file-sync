@@ -1,0 +1,66 @@
+group 'filesync'
+version '0.0.0' // not yet
+
+apply plugin: 'java'
+
+archivesBaseName = 'file-sync'
+sourceCompatibility = JavaVersion.VERSION_1_7
+
+sourceSets {
+    server
+    client
+}
+
+task runDefaultClient(type: JavaExec, dependsOn: clientClasses) {
+    description = 'Run filesync.Client'
+    main = 'filesync.Client'
+    classpath sourceSets.client.runtimeClasspath
+    args "--filename clientfile.txt --port 4000 --block-size 1024 --hostname localhost".split().toList()
+}
+
+task runDefaultServer(type: JavaExec, dependsOn: serverClasses) {
+    description = 'Run filesync.Server'
+    main = 'filesync.Server'
+    classpath sourceSets.server.runtimeClasspath
+    args "--filename serverfile.txt --port 4000".split().toList()
+}
+
+task serverJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'filesync.Server'
+    }
+    appendix = 'server'
+    from sourceSets.server.output
+    from {
+        configurations.serverCompile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    with jar
+}
+
+task clientJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'filesync.Client'
+    }
+    appendix = 'client'
+    from sourceSets.client.output
+    from {
+        configurations.clientCompile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    with jar
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+    serverCompile group: 'args4j', name: 'args4j', version:'2.33'
+    serverCompile fileTree(dir: 'libs', include: '*.jar')
+    clientCompile group: 'args4j', name: 'args4j', version:'2.33'
+    clientCompile fileTree(dir: 'libs', include: '*.jar')
+}
