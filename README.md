@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/cparram/ap-networking01.svg?branch=staging)](https://travis-ci.org/cparram/ap-networking01)
 # ap-networking01
 Synchronization files using custom protocol over client-server structure
 
