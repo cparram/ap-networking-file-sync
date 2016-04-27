@@ -19,6 +19,8 @@ public class Client {
     private int blockSize;
     @Option(name = "--hostname", usage = "Hostname", required = true)
     private String hostName;
+    @Option(name = "--direction", usage = "Direction", required = true)
+    private String direction;
 
 
     /**
@@ -41,7 +43,7 @@ public class Client {
             System.exit(-1);
         }
 
-        SyncFileThread syncFileThread = new SyncFileThread(syncFile, blockSize, hostName, port);
+        SyncFileThread syncFileThread = new SyncFileThread(syncFile, blockSize, hostName, port, direction);
         syncFileThread.start();
 
         while(true) {

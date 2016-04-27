@@ -15,7 +15,7 @@ task runDefaultClient(type: JavaExec, dependsOn: clientClasses) {
     description = 'Run filesync.Client'
     main = 'filesync.Client'
     classpath sourceSets.client.runtimeClasspath
-    args "--filename clientfile.txt --port 4000 --block-size 1024 --hostname localhost".split().toList()
+    args "--filename clientfile.txt --port 4000 --block-size 1024 --hostname localhost --direction pull".split().toList()
 }
 
 task runDefaultServer(type: JavaExec, dependsOn: serverClasses) {

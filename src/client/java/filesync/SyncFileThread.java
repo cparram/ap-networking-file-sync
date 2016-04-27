@@ -14,12 +14,14 @@ public class SyncFileThread  extends Thread {
     private final String hostName;
     private final int port;
     private SynchronisedFile syncFile;
+    private final String direction;
 
-    public SyncFileThread(SynchronisedFile syncFile, int blockSize, String hostName, int port) {
+    public SyncFileThread(SynchronisedFile syncFile, int blockSize, String hostName, int port, String direction) {
         this.syncFile = syncFile;
         this.blockSize = blockSize;
         this.hostName = hostName;
         this.port = port;
+        this.direction = direction;
     }
 
     @Override
@@ -29,7 +31,8 @@ public class SyncFileThread  extends Thread {
             DataOutputStream outStream = new DataOutputStream(socket.getOutputStream());
             BufferedReader inStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             sendToServer("BLOCKSIZE " + blockSize, outStream);
-            // ToDo: use direction option
+            sendToServer(direction, outStream);
+            sendToServer(syncFile.getFilename(), outStream);
             if (getServerMsg(inStream).matches("BLOCKSIZE_OK$")) {
                 Instruction inst;
                 while ((inst = syncFile.NextInstruction()) != null) {

@@ -1,9 +1,6 @@
 package filesync;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.Socket;
 
 /**
@@ -41,10 +38,42 @@ public class ServerSync extends Thread {
                 e.printStackTrace();
                 sendToClient("BLOCKSIZE_FAILED", output);
             }
-            // direction
+            String direction = getClientMsg(input);
+            String clientFileName = getClientMsg(input);
+            if (direction.equals("pull")) {
+                FileInputStream serverFile;
+                FileOutputStream newClientFile;
+                try {
+                    serverFile = new FileInputStream(fileName);
+                    newClientFile = new FileOutputStream(clientFileName);
+                    byte[] buffer = new byte[1024];
+                    int length;
+                    while ((length = serverFile.read(buffer)) > 0) {
+                        newClientFile.write(buffer, 0, length);
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else if (direction.equals("push")) {
+                FileInputStream clientFile;
+                FileOutputStream newServerFile;
+                try {
+                    clientFile = new FileInputStream(clientFileName);
+                    newServerFile = new FileOutputStream(fileName);
+                    byte[] buffer = new byte[1024];
+                    int length;
+                    while ((length = clientFile.read(buffer)) > 0) {
+                        newServerFile.write(buffer, 0, length);
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
 
             String instMsg = getClientMsg(input);
-            while(instMsg.matches("^(INST)\\s.+")) {
+            while (instMsg.matches("^(INST)\\s.+")) {
                 InstructionFactory instFact = new InstructionFactory();
                 Instruction receivedInst = instFact.FromJSON(instMsg.split("^(INST)\\s")[1]);
 
@@ -92,7 +121,8 @@ public class ServerSync extends Thread {
 
     /**
      * Sends messages to client.
-     * @param msg Message that will be sent
+     *
+     * @param msg    Message that will be sent
      * @param output Data output stream
      */
     private void sendToClient(String msg, DataOutputStream output) {
@@ -106,13 +136,14 @@ public class ServerSync extends Thread {
 
     /**
      * Gets client message. It will wait until client sends a message
+     *
      * @param input Reader
      * @return String message from client
      */
     private String getClientMsg(BufferedReader input) {
         String msg = "";
         try {
-            msg =  input.readLine();
+            msg = input.readLine();
         } catch (IOException e) {
             e.printStackTrace();
         }

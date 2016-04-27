@@ -4,10 +4,10 @@ Synchronization files using custom protocol over client-server structure. Projec
 
 ## Usage
 ### Build
-* `$ /.gradlew runDefaultServer`: To compile and run server with default options
-* `$ /.gradlew runDefaultClient`: Same as above but for client
-* `$ /.gradlew serverJar`: Creates a jar for server source set
-* `$ /.gradlew clientJar`: Same as above but for client
+* `$ ./gradlew runDefaultServer`: To compile and run server with default options
+* `$ ./gradlew runDefaultClient`: Same as above but for client
+* `$ ./gradlew serverJar`: Creates a jar for server source set
+* `$ ./gradlew clientJar`: Same as above but for client
 
 ### Run Server
 * `java -jar build/libs/file-sync-server<version>.jar [options]`
@@ -18,7 +18,7 @@ Synchronization files using custom protocol over client-server structure. Projec
 
 ### Options
 * Server: `--filename`, `--port`
-* Client: `--filename`, `--port`, `--block-size`, `--hostname`
+* Client: `--filename`, `--port`, `--block-size`, `--hostname`, `--direction`
 
 **Note** that filename must exist
 

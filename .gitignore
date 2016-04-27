@@ -14,3 +14,7 @@ gradle-app.setting
 # custom sync files
 clientfile.txt
 serverfile.txt
+
+.DS_Store
+src/client/client.iml
+src/server/server.iml
