@@ -1,15 +1,12 @@
 package filesync;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.Socket;
 
 /**
  * Created by cesar on 14-04-16.
  */
-public class SyncFileThread  extends Thread {
+public class SyncFileThread extends Thread {
     private final int blockSize;
     private final String hostName;
     private final int port;
@@ -31,9 +28,39 @@ public class SyncFileThread  extends Thread {
             DataOutputStream outStream = new DataOutputStream(socket.getOutputStream());
             BufferedReader inStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             sendToServer("BLOCKSIZE " + blockSize, outStream);
-            sendToServer(direction, outStream);
-            sendToServer(syncFile.getFilename(), outStream);
             if (getServerMsg(inStream).matches("BLOCKSIZE_OK$")) {
+                sendToServer(direction, outStream);
+                if (direction.equals("pull")) {
+                    String message;
+                    message = getServerMsg(inStream);
+                    FileOutputStream outputStream;
+                    try {
+                         outputStream = new FileOutputStream(syncFile.getFilename());
+                        while (!message.equals("end")){
+                            outputStream.write(message.getBytes());
+                            message = getServerMsg(inStream);
+                        }
+                        outputStream.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else if(direction.equals("push")){
+                    FileInputStream clientFile;
+                    try {
+                        clientFile = new FileInputStream(syncFile.getFilename());
+                        byte[] buffer = new byte[1024];
+                        while (clientFile.read(buffer) != -1) {
+                            sendToServer(new String(buffer), outStream);
+                        }
+                        sendToServer("end", outStream);
+                        clientFile.close();
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else{
+                    System.out.println("BAD DIRECTION. Use pull or push option");
+                }
                 Instruction inst;
                 while ((inst = syncFile.NextInstruction()) != null) {
                     sendToServer("INST " + inst.ToJSON(), outStream);
@@ -59,6 +86,7 @@ public class SyncFileThread  extends Thread {
 
     /**
      * Gets responses from server. It will waits until server sends a response
+     *
      * @param inStream Input
      * @return String message from server
      */
@@ -75,7 +103,8 @@ public class SyncFileThread  extends Thread {
 
     /**
      * Sends message to server.
-     * @param msg String message that will be sent.
+     *
+     * @param msg       String message that will be sent.
      * @param outStream Output stream
      */
     private void sendToServer(String msg, DataOutputStream outStream) {

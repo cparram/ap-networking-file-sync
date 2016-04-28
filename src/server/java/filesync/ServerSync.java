@@ -39,37 +39,36 @@ public class ServerSync extends Thread {
                 sendToClient("BLOCKSIZE_FAILED", output);
             }
             String direction = getClientMsg(input);
-            String clientFileName = getClientMsg(input);
             if (direction.equals("pull")) {
                 FileInputStream serverFile;
-                FileOutputStream newClientFile;
                 try {
                     serverFile = new FileInputStream(fileName);
-                    newClientFile = new FileOutputStream(clientFileName);
                     byte[] buffer = new byte[1024];
-                    int length;
-                    while ((length = serverFile.read(buffer)) > 0) {
-                        newClientFile.write(buffer, 0, length);
+                    while (serverFile.read(buffer) != -1) {
+                        sendToClient(new String(buffer), output);
                     }
+                    sendToClient("end", output);
+                    serverFile.close();
 
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             } else if (direction.equals("push")) {
-                FileInputStream clientFile;
-                FileOutputStream newServerFile;
+                String message;
+                message = getClientMsg(input);
+                FileOutputStream outputStream;
                 try {
-                    clientFile = new FileInputStream(clientFileName);
-                    newServerFile = new FileOutputStream(fileName);
-                    byte[] buffer = new byte[1024];
-                    int length;
-                    while ((length = clientFile.read(buffer)) > 0) {
-                        newServerFile.write(buffer, 0, length);
+                    outputStream = new FileOutputStream(fileName);
+                    while (!message.equals("end")){
+                        outputStream.write(message.getBytes());
+                        message = getClientMsg(input);
                     }
-
+                    outputStream.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            } else {
+                System.out.println("BAD DIRECTION. Use pull or push option");
             }
 
             String instMsg = getClientMsg(input);
